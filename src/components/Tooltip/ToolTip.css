@@ -1,0 +1,182 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.tooltip-preview {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 180px; /* Add this line */
+
+}
+
+.tooltip-config {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-target {
+  display: inline-block;
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-top {
+  transform: translateX(-50%);
+  bottom: 100%;
+  margin-bottom: 10px;
+}
+
+.tooltip-bottom {
+  transform: translateX(-50%);
+  top: 100%;
+  margin-top: 10px;
+}
+
+.tooltip-left {
+  transform: translateX(-100%);
+  top: 50%;
+  margin-top: -15px;
+}
+
+
+.tooltip-right {
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  margin-left: 10px; /* Add this line */
+}
+
+
+.tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.tooltip-arrow-top {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 10px 10px 0 10px;
+  border-color: transparent transparent transparent transparent;
+}
+
+.tooltip-arrow-bottom {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent transparent transparent;
+}
+
+.tooltip-arrow-left {
+  top: 50%;
+  right: -10px;
+  transform: translateY(-50%);
+  border-width: 10px 0 10px 10px;
+  border-color: transparent transparent transparent transparent;
+}
+
+.tooltip-arrow-right {
+  top: 50%;
+  left: -10px;
+  transform: translateY(-50%);
+  border-width: 10px 10px 10px 0;
+  border-color: transparent transparent transparent transparent;
+}
+
+
+
+.tooltip img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* New style properties */
+
+.tooltip {
+  font-size: var(--textSize);
+  padding: var(--padding);
+  color: var(--textColor);
+  background-color: var(--backgroundColor);
+  border-radius: var(--cornerRadius);
+  width: var(--tooltipWidth);
+}
+
+.tooltip-arrow {
+  width: var(--arrowWidth);
+  height: var(--arrowHeight);
+  background-color: var(--backgroundColor);
+}
+
+
+.config-container {
+  margin-top: 20px;
+  text-align:start;
+  width: 40%;
+}
+
+.tooltip-config {
+  justify-content: flex-end;
+
+}
+
+.tooltip-config label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.tooltip-config input[type="text"],
+.tooltip-config select {
+  width: 200px;
+  padding: 5px;
+  font-size: 14px;
+}
+
+.tooltip-config button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  font-size: 14px;
+}
+
+
+.tooltip-preview {
+  justify-content: flex-end;
+}
+
+.tooltip-config {
+  justify-content: flex-start;
+  margin-left: 45px;
+}
+
+.preview-container {
+  margin-left: 180px;
+  margin-left: 960px;
+  margin-top: 48px;
+}
+
