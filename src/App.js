@@ -1,196 +1,273 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Tooltip from './components/Tooltip/Tooltip.jsx';
-import './components/Tooltip/ToolTip.css'
+import './components/Tooltip/ToolTip.css';
 
 const App = () => {
-  const [tooltips, setTooltips] = useState([]);
+  const [tooltipConfig, setTooltipConfig] = useState({
+    targetElement: 'button3',
+    position: 'bottom',
+    text: 'Tooltip text goes here',
+    image: '',
+    textSize: 3,
+    padding: 3,
+    textColor: '#ffffff',
+    backgroundColor: '#333333',
+    cornerRadius: 3,
+    tooltipWidth: 3,
+    arrowWidth: 3,
+    arrowHeight: 3,
+    isVisible: true
+  });
 
-  const handleAddTooltip = () => {
-    setTooltips([...tooltips, {}]);
+  const [activeTooltip, setActiveTooltip] = useState('button3');
+
+  // Load saved configuration from localStorage
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('tooltipConfig');
+    if (savedConfig) {
+      setTooltipConfig(JSON.parse(savedConfig));
+    }
+  }, []);
+
+  // Save configuration to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('tooltipConfig', JSON.stringify(tooltipConfig));
+  }, [tooltipConfig]);
+
+  const handleConfigChange = (key, value) => {
+    setTooltipConfig(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
-  const handleRemoveTooltip = (index) => {
-    const updatedTooltips = [...tooltips];
-    updatedTooltips.splice(index, 1);
-    setTooltips(updatedTooltips);
+  const handleShowTooltip = () => {
+    setActiveTooltip(tooltipConfig.targetElement);
   };
 
-  const handleTooltipChange = (index, key, value) => {
-    const updatedTooltips = [...tooltips];
-    updatedTooltips[index][key] = value;
-    setTooltips(updatedTooltips);
+  const handleHideTooltip = () => {
+    setActiveTooltip(null);
+  };
+
+  const handleResetConfig = () => {
+    const defaultConfig = {
+      targetElement: 'button3',
+      position: 'bottom',
+      text: 'Tooltip text goes here',
+      image: '',
+      textSize: 3,
+      padding: 3,
+      textColor: '#ffffff',
+      backgroundColor: '#333333',
+      cornerRadius: 3,
+      tooltipWidth: 3,
+      arrowWidth: 3,
+      arrowHeight: 3,
+      isVisible: true
+    };
+    setTooltipConfig(defaultConfig);
+    setActiveTooltip('button3');
+  };
+
+  const targetButtons = [
+    { id: 'button1', label: 'Button 1', className: 'primary' },
+    { id: 'button2', label: 'Button 2', className: 'secondary' },
+    { id: 'button3', label: 'Button 3', className: 'success' },
+    { id: 'button4', label: 'Button 4', className: 'danger' },
+    { id: 'button5', label: 'Button 5', className: 'warning' }
+  ];
+
+  const renderTargetButton = (button) => {
+    const isActive = activeTooltip === button.id;
+    const showTooltip = tooltipConfig.targetElement === button.id && isActive;
+
+    return (
+      <Tooltip
+        key={button.id}
+        target={
+          <button
+            className={`target-button ${button.className}`}
+            onClick={() => {
+              if (tooltipConfig.targetElement === button.id) {
+                handleShowTooltip();
+              }
+            }}
+          >
+            {button.label}
+          </button>
+        }
+        position={tooltipConfig.position}
+        style={{
+          textSize: `${tooltipConfig.textSize * 4}px`,
+          padding: `${tooltipConfig.padding * 4}px`,
+          textColor: tooltipConfig.textColor,
+          backgroundColor: tooltipConfig.backgroundColor,
+          cornerRadius: `${tooltipConfig.cornerRadius * 2}px`,
+          tooltipWidth: `${tooltipConfig.tooltipWidth * 50}px`,
+          arrowWidth: `${tooltipConfig.arrowWidth * 2}px`,
+          arrowHeight: `${tooltipConfig.arrowHeight * 2}px`
+        }}
+        text={tooltipConfig.text}
+        image={tooltipConfig.image}
+        isVisible={showTooltip}
+        onClose={handleHideTooltip}
+      />
+    );
   };
 
   return (
-    <div>
-      <div className="preview-container">
-        {tooltips.map((tooltip, index) => (
-          <Tooltip
-            key={index}
-            target={<button>{tooltip.target || `Button ${index + 1}`}</button>}
-            position={tooltip.position || 'top'}
-            style={{
-              fontSize: tooltip.textSize || 'inherit',
-              padding: tooltip.padding || '8px',
-              color: tooltip.textColor || '#fff',
-              backgroundColor: tooltip.backgroundColor || '#333',
-              borderRadius: tooltip.cornerRadius || '4px',
-              width: tooltip.tooltipWidth || 'auto',
-              arrowWidth: tooltip.arrowWidth || '10px',
-              arrowHeight: tooltip.arrowHeight || '10px',
-            }}
-            text={tooltip.text || ''}
-            image={tooltip.image || ''}
-          />
-        ))}
-      </div>
-      <div className="config-container">
-        <h2>Tooltip Configuration</h2>
-        {tooltips.map((tooltip, index) => (
-          <div key={index} className="tooltip-config">
-            <h3>Tooltip {index + 1}</h3>
-            <div>
-              <label>
-                Target Element:
-                <input
-                  type="text"
-                  value={tooltip.target || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'target', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Position:
-                <select
-                  value={tooltip.position || 'top'}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'position', e.target.value)
-                  }
-                >
-                  <option value="top">Top</option>
-                  <option value="right">Right</option>
-                  <option value="bottom">Bottom</option>
-                  <option value="left">Left</option>
-                </select>
-              </label>
-            </div>
-            <div>
-              <label>
-                Tooltip Text:
-                <input
-                  type="text"
-                  value={tooltip.text || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'text', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Text Size:
-                <input
-                  type="text"
-                  value={tooltip.textSize || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'textSize', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Padding:
-                <input
-                  type="text"
-                  value={tooltip.padding || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'padding', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Text Color:
-                <input
-                  type="text"
-                  value={tooltip.textColor || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'textColor', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Background Color:
-                <input
-                  type="text"
-                  value={tooltip.backgroundColor || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'backgroundColor', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Corner Radius:
-                <input
-                  type="text"
-                  value={tooltip.cornerRadius || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'cornerRadius', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Tooltip Width:
-                <input
-                  type="text"
-                  value={tooltip.tooltipWidth || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'tooltipWidth', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Arrow Width:
-                <input
-                  type="text"
-                  value={tooltip.arrowWidth || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'arrowWidth', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <div>
-              <label>
-                Arrow Height:
-                <input
-                  type="text"
-                  value={tooltip.arrowHeight || ''}
-                  onChange={(e) =>
-                    handleTooltipChange(index, 'arrowHeight', e.target.value)
-                  }
-                />
-              </label>
-            </div>
-            <button onClick={() => handleRemoveTooltip(index)}>
-              Remove Tooltip
-            </button>
+    <div className="app-container">
+      {/* Configuration Panel */}
+      <div className="config-panel">
+        <h1>Tooltip Configuration</h1>
+        
+        <div className="config-section">
+          <div className="form-group">
+            <label>Target Element:</label>
+            <select
+              value={tooltipConfig.targetElement}
+              onChange={(e) => handleConfigChange('targetElement', e.target.value)}
+            >
+              {targetButtons.map(button => (
+                <option key={button.id} value={button.id}>
+                  {button.label}
+                </option>
+              ))}
+            </select>
           </div>
-        ))}
-        <button onClick={handleAddTooltip}>Add Tooltip</button>
+        </div>
+
+        <div className="config-section">
+          <div className="form-group">
+            <label>Tooltip text:</label>
+            <input
+              type="text"
+              value={tooltipConfig.text}
+              onChange={(e) => handleConfigChange('text', e.target.value)}
+              placeholder="Input"
+            />
+          </div>
+        </div>
+
+        <div className="config-section">
+          <div className="form-row">
+            <div className="form-group">
+              <label>Text Size:</label>
+              <input
+                type="number"
+                value={tooltipConfig.textSize}
+                onChange={(e) => handleConfigChange('textSize', parseInt(e.target.value) || 0)}
+                min="1"
+                max="10"
+              />
+            </div>
+            <div className="form-group">
+              <label>Padding:</label>
+              <input
+                type="number"
+                value={tooltipConfig.padding}
+                onChange={(e) => handleConfigChange('padding', parseInt(e.target.value) || 0)}
+                min="1"
+                max="10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="config-section">
+          <div className="form-group">
+            <label>Text Colour:</label>
+            <input
+              type="text"
+              value={tooltipConfig.textColor}
+              onChange={(e) => handleConfigChange('textColor', e.target.value)}
+              placeholder="Input"
+            />
+          </div>
+          <div className="form-group">
+            <label>Background colour:</label>
+            <input
+              type="text"
+              value={tooltipConfig.backgroundColor}
+              onChange={(e) => handleConfigChange('backgroundColor', e.target.value)}
+              placeholder="Input"
+            />
+          </div>
+        </div>
+
+        <div className="config-section">
+          <div className="form-row">
+            <div className="form-group">
+              <label>Corner radius:</label>
+              <input
+                type="number"
+                value={tooltipConfig.cornerRadius}
+                onChange={(e) => handleConfigChange('cornerRadius', parseInt(e.target.value) || 0)}
+                min="1"
+                max="10"
+              />
+            </div>
+            <div className="form-group">
+              <label>Tooltip width:</label>
+              <input
+                type="number"
+                value={tooltipConfig.tooltipWidth}
+                onChange={(e) => handleConfigChange('tooltipWidth', parseInt(e.target.value) || 0)}
+                min="1"
+                max="10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="config-section">
+          <div className="form-row">
+            <div className="form-group">
+              <label>Arrow width:</label>
+              <input
+                type="number"
+                value={tooltipConfig.arrowWidth}
+                onChange={(e) => handleConfigChange('arrowWidth', parseInt(e.target.value) || 0)}
+                min="1"
+                max="10"
+              />
+            </div>
+            <div className="form-group">
+              <label>Arrow height:</label>
+              <input
+                type="number"
+                value={tooltipConfig.arrowHeight}
+                onChange={(e) => handleConfigChange('arrowHeight', parseInt(e.target.value) || 0)}
+                min="1"
+                max="10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="button-group">
+          <button className="btn btn-primary" onClick={handleShowTooltip}>
+            Show Tooltip
+          </button>
+          <button className="btn btn-secondary" onClick={handleHideTooltip}>
+            Hide Tooltip
+          </button>
+        </div>
+        
+        <div className="button-group">
+          <button className="btn btn-danger" onClick={handleResetConfig}>
+            Reset Configuration
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Preview Panel */}
+      <div className="preview-panel">
+        <div className="mobile-preview">
+          <div className="mobile-content">
+            {targetButtons.map(button => renderTargetButton(button))}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,78 +1,152 @@
-import React, { useState } from 'react';
-import './ToolTip.css'; // Import CSS file for styling
+import React, { useState, useEffect, useRef } from 'react';
+import './ToolTip.css';
 
-const Tooltip = ({ target, position, style, text, image }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
+const Tooltip = ({ 
+  target, 
+  position = 'top', 
+  style = {}, 
+  text = '', 
+  image = null,
+  isVisible = false,
+  onClose = null 
+}) => {
+  const [showTooltip, setShowTooltip] = useState(isVisible);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const targetRef = useRef(null);
+  const tooltipRef = useRef(null);
 
-  const handleMouseEnter = () => {
-    setShowTooltip(true);
-  };
+  useEffect(() => {
+    setShowTooltip(isVisible);
+  }, [isVisible]);
 
-  const handleMouseLeave = () => {
-    setShowTooltip(false);
-  };
+  useEffect(() => {
+    if (showTooltip && targetRef.current) {
+      calculatePosition();
+    }
+  }, [showTooltip, position, targetRef.current]);
 
-  const getPositionStyles = () => {
+  const calculatePosition = () => {
+    if (!targetRef.current || !tooltipRef.current) return;
+
+    const targetRect = targetRef.current.getBoundingClientRect();
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
+    const containerRect = targetRef.current.closest('.mobile-preview')?.getBoundingClientRect() || { left: 0, top: 0 };
+
+    let top = 0;
+    let left = 0;
+
     switch (position) {
       case 'top':
-        return {
-          top: target.offsetTop - 10,
-          left: target.offsetLeft + target.offsetWidth / 2,
-        };
-      case 'right':
-        return {
-          top: target.offsetTop + target.offsetHeight / 2,
-          left: target.offsetLeft + target.offsetWidth + 10,
-        };
+        top = targetRect.top - containerRect.top - tooltipRect.height - 10;
+        left = targetRect.left - containerRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        break;
       case 'bottom':
-        return {
-          top: target.offsetTop + target.offsetHeight + 10,
-          left: target.offsetLeft + target.offsetWidth / 2,
-        };
+        top = targetRect.bottom - containerRect.top + 10;
+        left = targetRect.left - containerRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        break;
       case 'left':
-        return {
-          top: target.offsetTop + target.offsetHeight / 2,
-          left: target.offsetLeft - 10,
-          transform: 'translateX(-100%)'
-        };
+        top = targetRect.top - containerRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.left - containerRect.left - tooltipRect.width - 10;
+        break;
+      case 'right':
+        top = targetRect.top - containerRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.right - containerRect.left + 10;
+        break;
       default:
-        return {};
+        break;
+    }
+
+    // Ensure tooltip stays within container bounds
+    if (left < 0) left = 10;
+    if (left + tooltipRect.width > containerRect.width) left = containerRect.width - tooltipRect.width - 10;
+    if (top < 0) top = 10;
+    if (top + tooltipRect.height > containerRect.height) top = containerRect.height - tooltipRect.height - 10;
+
+    setTooltipPosition({ top, left });
+  };
+
+  const handleMouseEnter = () => {
+    if (!isVisible) {
+      setShowTooltip(true);
     }
   };
 
-  const tooltipStyle = {
-    fontSize: style.textSize,
-    padding: style.padding,
-    color: 'white', 
-    backgroundColor: 'black', 
-    borderRadius: style.cornerRadius,
-    width: style.tooltipWidth,
+  const handleMouseLeave = () => {
+    if (!isVisible) {
+      setShowTooltip(false);
+    }
   };
 
-  const arrowStyle = {
-    width: style.arrowWidth,
-    height: style.arrowHeight,
-    backgroundColor: style.backgroundColor,
+  const handleClose = () => {
+    setShowTooltip(false);
+    if (onClose) onClose();
+  };
+
+  const tooltipStyle = {
+    position: 'absolute',
+    top: `${tooltipPosition.top}px`,
+    left: `${tooltipPosition.left}px`,
+    fontSize: style.textSize || '14px',
+    padding: style.padding || '12px',
+    color: style.textColor || '#ffffff',
+    backgroundColor: style.backgroundColor || '#333333',
+    borderRadius: style.cornerRadius || '8px',
+    width: style.tooltipWidth || 'auto',
+    maxWidth: style.tooltipWidth || '200px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    zIndex: 1000,
+    ...style
   };
 
   return (
-    <div className="tooltip-container">
+    <div className="tooltip-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
       <div
+        ref={targetRef}
         className="tooltip-target"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        ref={(node) => (target = node)}
+        style={{ display: 'inline-block' }}
       >
         {target}
       </div>
+      
       {showTooltip && (
         <div
+          ref={tooltipRef}
           className={`tooltip tooltip-${position}`}
-          style={{ ...getPositionStyles(), ...tooltipStyle }}
+          style={tooltipStyle}
         >
-          <div className={`tooltip-arrow tooltip-arrow-${position}`} style={arrowStyle} />
-          {text}
-          {image && <img src={image} alt="Tooltip" />}
+          <div className="tooltip-content">
+            {text && <div className="tooltip-text">{text}</div>}
+            {image && (
+              <div className="tooltip-image">
+                <img src={image} alt="Tooltip" style={{ maxWidth: '100%', height: 'auto' }} />
+              </div>
+            )}
+          </div>
+          
+          <div className={`tooltip-arrow tooltip-arrow-${position}`} />
+          
+          {isVisible && (
+            <button 
+              className="tooltip-close"
+              onClick={handleClose}
+              style={{
+                position: 'absolute',
+                top: '4px',
+                right: '4px',
+                background: 'none',
+                border: 'none',
+                color: style.textColor || '#ffffff',
+                cursor: 'pointer',
+                fontSize: '16px',
+                padding: '2px',
+                lineHeight: 1
+              }}
+            >
+              ×
+            </button>
+          )}
         </div>
       )}
     </div>
